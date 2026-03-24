@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
-export async function POST() {
+export async function GET() {
   try {
     const supabase = await createClient();
 
@@ -17,4 +17,8 @@ export async function POST() {
       { status: 500 }
     );
   }
+}
+
+export async function POST() {
+  return GET();
 }

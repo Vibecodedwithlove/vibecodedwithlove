@@ -255,7 +255,7 @@ async function getFeaturedProjects() {
       return MOCK_PROJECTS;
     }
 
-    return (data as ProjectWithCreator[]) || MOCK_PROJECTS;
+    return (data && data.length > 0) ? (data as ProjectWithCreator[]) : MOCK_PROJECTS;
   } catch (error) {
     console.error('Error in getFeaturedProjects:', error);
     return MOCK_PROJECTS;

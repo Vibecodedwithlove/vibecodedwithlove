@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 interface User {
@@ -15,6 +15,10 @@ interface NavbarProps {
 export default function Navbar({ user }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains('dark'));
+  }, []);
 
   const handleThemeToggle = () => {
     const html = document.documentElement;

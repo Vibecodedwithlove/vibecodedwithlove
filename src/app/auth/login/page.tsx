@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
@@ -11,7 +11,9 @@ type Mode = 'login' | 'signup';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+  const redirectTo = searchParams.get('redirect') || '/';
 
   const [mode, setMode] = useState<Mode>('login');
   const [email, setEmail] = useState('');
@@ -35,7 +37,7 @@ export default function LoginPage() {
       await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: `${siteUrl}/auth/callback`,
+          redirectTo: `${siteUrl}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`,
         },
       });
     } catch (err) {
@@ -91,7 +93,7 @@ export default function LoginPage() {
           return;
         }
 
-        router.push('/');
+        router.push(redirectTo);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');

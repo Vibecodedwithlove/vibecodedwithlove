@@ -56,11 +56,6 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           <ContributionLevel level={project.ai_contribution} />
         </div>
 
-        {/* Suggestions Count */}
-        <div className="mb-4 text-sm text-foreground/60">
-          <span className="font-medium">{Math.floor(Math.random() * 15)}</span> suggestions
-        </div>
-
         {/* Creator and Date */}
         <div className={cn(
           'flex items-center justify-between',

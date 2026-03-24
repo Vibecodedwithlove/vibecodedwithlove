@@ -5,9 +5,10 @@ export default function Footer() {
 
   const footerLinks = [
     { label: 'Browse', href: '/browse' },
-    { label: 'About', href: '/about' },
+    { label: 'Submit', href: '/project/submit' },
     { label: 'Resources', href: '/resources' },
-    { label: 'GitHub', href: 'https://github.com/vibecodedwithlove' },
+    { label: 'About', href: '/about' },
+    { label: 'GitHub', href: 'https://github.com/Vibecodedwithlove/vibecodedwithlove' },
   ];
 
   return (

@@ -25,9 +25,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Redirect to home on successful authentication
-    const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    return NextResponse.redirect(new URL('/', redirectUrl));
+    // Redirect to intended page or home on successful authentication
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const redirectPath = searchParams.get('redirect') || '/';
+    return NextResponse.redirect(new URL(redirectPath, siteUrl));
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
     return NextResponse.redirect(

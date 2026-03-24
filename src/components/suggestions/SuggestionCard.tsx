@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { SuggestionWithAuthor, SuggestionType } from '@/types';
 import { formatRelativeDate } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
@@ -32,9 +33,17 @@ export default function SuggestionCard({
   isProjectOwner,
   isAuthor,
 }: SuggestionCardProps) {
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isHowToFixExpanded, setIsHowToFixExpanded] = useState(true);
+  const [currentStatus, setCurrentStatus] = useState(suggestion.status);
+  const [displayData, setDisplayData] = useState({
+    type: suggestion.type,
+    title: suggestion.title,
+    body: suggestion.body,
+    how_to_fix: suggestion.how_to_fix,
+  });
   const [editFormData, setEditFormData] = useState({
     type: suggestion.type,
     title: suggestion.title,
@@ -45,6 +54,8 @@ export default function SuggestionCard({
   const supabase = createClient();
 
   const handleStatusChange = async (newStatus: string) => {
+    const previousStatus = currentStatus;
+    setCurrentStatus(newStatus);
     try {
       const { error } = await supabase.rpc('update_suggestion_status', {
         suggestion_id: suggestion.id,
@@ -53,9 +64,11 @@ export default function SuggestionCard({
 
       if (error) {
         console.error('Error updating status:', error);
+        setCurrentStatus(previousStatus);
       }
     } catch (err) {
       console.error('Error updating status:', err);
+      setCurrentStatus(previousStatus);
     }
   };
 
@@ -76,7 +89,9 @@ export default function SuggestionCard({
       if (error) {
         console.error('Error updating suggestion:', error);
       } else {
+        setDisplayData({ ...editFormData });
         setIsEditing(false);
+        router.refresh();
       }
     } catch (err) {
       console.error('Error updating suggestion:', err);
@@ -158,14 +173,14 @@ export default function SuggestionCard({
         {/* Header with type and status */}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <SuggestionTypeBadge type={suggestion.type} />
+            <SuggestionTypeBadge type={displayData.type} />
             {isProjectOwner && (
               <select
-                value={suggestion.status}
+                value={currentStatus}
                 onChange={(e) => handleStatusChange(e.target.value)}
                 className={cn(
                   'px-3 py-1 text-sm font-medium rounded-md border',
-                  statusColors[suggestion.status]
+                  statusColors[currentStatus]
                 )}
               >
                 <option value="open">Open</option>
@@ -178,11 +193,11 @@ export default function SuggestionCard({
               <span
                 className={cn(
                   'px-3 py-1 text-sm font-medium rounded-md border',
-                  statusColors[suggestion.status]
+                  statusColors[currentStatus]
                 )}
               >
-                {suggestion.status.charAt(0).toUpperCase() +
-                  suggestion.status.slice(1)}
+                {currentStatus.charAt(0).toUpperCase() +
+                  currentStatus.slice(1)}
               </span>
             )}
           </div>
@@ -200,12 +215,12 @@ export default function SuggestionCard({
 
         {/* Title */}
         <h3 className="text-lg font-semibold text-foreground">
-          {suggestion.title}
+          {displayData.title}
         </h3>
 
         {/* Body */}
         <div>
-          <MarkdownRenderer content={suggestion.body} />
+          <MarkdownRenderer content={displayData.body} />
         </div>
 
         {/* How to Fix Section */}
@@ -237,7 +252,7 @@ export default function SuggestionCard({
 
           {isHowToFixExpanded && (
             <div className="mt-3">
-              <MarkdownRenderer content={suggestion.how_to_fix} />
+              <MarkdownRenderer content={displayData.how_to_fix} />
             </div>
           )}
         </div>
