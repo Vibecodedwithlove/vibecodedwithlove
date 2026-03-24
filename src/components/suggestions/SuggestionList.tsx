@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 
 interface SuggestionListProps {
   suggestions: SuggestionWithAuthor[];
-  projectId: string;
+  projectId?: string;
   isProjectOwner: boolean;
   currentUserId?: string;
 }

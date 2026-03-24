@@ -149,53 +149,78 @@ export default function ProjectSubmitForm({
         return;
       }
 
+      // Reserved slugs that conflict with app routes
+      const RESERVED_SLUGS = ['submit', 'new', 'edit', 'delete', 'api', 'admin', 'browse', 'auth'];
       let projectSlug = generateSlug(formData.title);
 
-      // Check for slug collision and append random suffix if needed
-      const { data: existingSlug } = await supabase
-        .from('projects')
-        .select('id')
-        .eq('slug', projectSlug)
-        .maybeSingle();
-      if (existingSlug) {
+      if (RESERVED_SLUGS.includes(projectSlug)) {
         projectSlug += '-' + Math.random().toString(36).slice(2, 6);
       }
 
       if (mode === 'create') {
-        const { data, error: submitError } = await supabase
-          .from('projects')
-          .insert([
-            {
-              creator_id: user.id,
-              title: formData.title,
-              slug: projectSlug,
-              description: formData.description,
-              category: formData.category,
-              ai_tools: formData.ai_tools,
-              ai_contribution: formData.ai_contribution,
-              demo_url: formData.demo_url || null,
-              repo_url: formData.repo_url || null,
-              build_story: formData.build_story,
-              security_reviewed: formData.security_reviewed,
-              open_to_suggestions: formData.open_to_suggestions,
-              what_it_does: formData.what_it_does,
-              user_flow: formData.user_flow,
-              main_components: formData.main_components,
-              external_dependencies: formData.external_dependencies || null,
-              least_confident: formData.least_confident || null,
-              code_map: formData.code_map || null,
-              status: 'active',
-              featured: false,
-            },
-          ])
-          .select()
-          .single();
+        // Retry loop to handle slug collisions (TOCTOU race condition)
+        let attempts = 0;
+        let lastError: unknown = null;
 
-        if (submitError) throw submitError;
+        while (attempts < 5) {
+          const { data, error: submitError } = await supabase
+            .from('projects')
+            .insert([
+              {
+                creator_id: user.id,
+                title: formData.title,
+                slug: projectSlug,
+                description: formData.description,
+                category: formData.category,
+                ai_tools: formData.ai_tools,
+                ai_contribution: formData.ai_contribution,
+                demo_url: formData.demo_url || null,
+                repo_url: formData.repo_url || null,
+                build_story: formData.build_story,
+                security_reviewed: formData.security_reviewed,
+                open_to_suggestions: formData.open_to_suggestions,
+                what_it_does: formData.what_it_does,
+                user_flow: formData.user_flow,
+                main_components: formData.main_components,
+                external_dependencies: formData.external_dependencies || null,
+                least_confident: formData.least_confident || null,
+                code_map: formData.code_map || null,
+                status: 'active',
+                featured: false,
+              },
+            ])
+            .select()
+            .single();
 
-        if (data) {
-          router.push(`/project/${data.slug}`);
+          if (!submitError && data) {
+            router.push(`/project/${data.slug}`);
+            return;
+          }
+
+          // Slug collision — retry with random suffix
+          if (submitError?.code === '23505' && submitError?.message?.includes('slug')) {
+            projectSlug = generateSlug(formData.title) + '-' + Math.random().toString(36).slice(2, 6);
+            attempts++;
+            lastError = submitError;
+            continue;
+          }
+
+          // Field length constraint violation
+          if (submitError?.code === '23514') {
+            setError('One of your fields exceeds the maximum length. Please shorten your content.');
+            return;
+          }
+
+          // Other error — don't retry
+          lastError = submitError;
+          break;
         }
+
+        if (attempts >= 5) {
+          setError('Could not generate a unique URL. Please try a different title.');
+          return;
+        }
+        if (lastError) throw lastError;
       } else {
         if (!initialData) throw new Error('No project data to update');
 
@@ -219,9 +244,16 @@ export default function ProjectSubmitForm({
             least_confident: formData.least_confident || null,
             code_map: formData.code_map || null,
           })
-          .eq('id', initialData.id);
+          .eq('id', initialData.id)
+          .eq('creator_id', user.id);
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          if (updateError.code === '23514') {
+            setError('One of your fields exceeds the maximum length. Please shorten your content.');
+            return;
+          }
+          throw updateError;
+        }
 
         router.push(`/project/${initialData.slug}`);
       }

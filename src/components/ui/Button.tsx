@@ -10,7 +10,6 @@ interface ButtonProps
   size?: ButtonSize;
   isLoading?: boolean;
   children: ReactNode;
-  asChild?: boolean;
   href?: string;
   target?: string;
   rel?: string;

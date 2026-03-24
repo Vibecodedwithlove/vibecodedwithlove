@@ -28,8 +28,14 @@ export async function GET(request: NextRequest) {
     // Redirect to intended page or home on successful authentication
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
     let redirectPath = searchParams.get('redirect') || '/';
-    // Prevent open redirect — only allow relative paths starting with /
-    if (!redirectPath.startsWith('/') || redirectPath.startsWith('//')) {
+    // Prevent open redirect — validate the resolved URL stays on our origin
+    try {
+      const resolved = new URL(redirectPath, siteUrl);
+      const origin = new URL(siteUrl).origin;
+      if (resolved.origin !== origin) {
+        redirectPath = '/';
+      }
+    } catch {
       redirectPath = '/';
     }
     return NextResponse.redirect(new URL(redirectPath, siteUrl));

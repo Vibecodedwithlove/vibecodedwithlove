@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Button from '@/components/ui/Button';
@@ -9,7 +9,7 @@ import Input from '@/components/ui/Input';
 
 type Mode = 'login' | 'signup';
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
@@ -41,7 +41,8 @@ export default function LoginPage() {
         },
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign in with GitHub');
+      console.error('GitHub sign-in failed:', err);
+      setError('Failed to sign in with GitHub. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -75,7 +76,8 @@ export default function LoginPage() {
         });
 
         if (error) {
-          setError(error.message);
+          setError('Failed to create account. Please try again.');
+          console.error('Signup error:', error);
           return;
         }
 
@@ -89,14 +91,16 @@ export default function LoginPage() {
         });
 
         if (error) {
-          setError(error.message);
+          setError('Invalid email or password.');
+          console.error('Login error:', error);
           return;
         }
 
         router.push(redirectTo);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Auth error:', err);
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -209,5 +213,19 @@ export default function LoginPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="text-muted">Loading...</div>
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }

@@ -1,7 +1,8 @@
 'use client';
 
+import { useId, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { ReactNode, useEffect, useRef } from 'react';
+import { ReactNode } from 'react';
 
 interface TextareaProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -26,7 +27,8 @@ export default function Textarea({
   onChange,
   ...props
 }: TextareaProps) {
-  const textareaId = id || `textarea-${Math.random().toString(36).slice(2, 9)}`;
+  const generatedId = useId();
+  const textareaId = id || generatedId;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {

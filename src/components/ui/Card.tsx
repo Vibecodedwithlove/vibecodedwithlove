@@ -19,7 +19,7 @@ const paddingStyles: Record<CardPadding, string> = {
 export default function Card({
   children,
   padding = 'md',
-  hover = true,
+  hover = false,
   className,
 }: CardProps) {
   return (

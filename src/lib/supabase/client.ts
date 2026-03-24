@@ -10,20 +10,14 @@ export const createClient = () => {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    // In production, fail loudly so the issue is caught immediately
-    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
-      throw new Error(
-        'Supabase environment variables are missing. ' +
-        'Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.'
-      );
-    }
-    // During build/SSG, log a warning and return a placeholder
+    // In the browser, always throw — silent failures are worse than crashes
     if (typeof window !== 'undefined') {
-      console.error(
+      throw new Error(
         'Supabase environment variables are missing. ' +
         'Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local'
       );
     }
+    // During build/SSG only — placeholder to prevent build failures
     return createBrowserClient(
       'https://placeholder.supabase.co',
       'placeholder-anon-key'

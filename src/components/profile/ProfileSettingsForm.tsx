@@ -47,14 +47,14 @@ export default function ProfileSettingsForm({ profile }: ProfileSettingsFormProp
           bio: formData.bio || null,
           website_url: formData.website_url || null,
           github_url: formData.github_url || null,
-          updated_at: new Date().toISOString(),
         })
         .eq('id', profile.id);
 
       if (error) {
+        console.error('Profile update failed:', error);
         setMessage({
           type: 'error',
-          text: error.message || 'Failed to update profile',
+          text: 'Failed to update profile. Please try again.',
         });
       } else {
         setMessage({

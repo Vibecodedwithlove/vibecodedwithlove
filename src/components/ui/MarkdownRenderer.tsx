@@ -139,14 +139,21 @@ export default function MarkdownRenderer({
           hr: ({ ...props }) => (
             <hr className="border-t border-border my-6" {...props} />
           ),
-          img: ({ ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              className="max-w-full h-auto rounded-lg my-4"
-              alt=""
-              {...props}
-            />
-          ),
+          img: ({ src, alt, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => {
+            // Only allow https images to prevent tracking pixels and data exfiltration
+            const safeSrc = src && src.startsWith('https://') ? src : '';
+            if (!safeSrc) return null;
+            return (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                className="max-w-full h-auto rounded-lg my-4"
+                alt={alt || ''}
+                src={safeSrc}
+                referrerPolicy="no-referrer"
+                {...props}
+              />
+            );
+          },
         }}
       >
         {content}

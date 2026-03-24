@@ -1,5 +1,6 @@
 'use client';
 
+import { useId } from 'react';
 import { cn } from '@/lib/utils';
 import { ReactNode } from 'react';
 
@@ -26,10 +27,11 @@ export default function Select({
   id,
   ...props
 }: SelectProps) {
-  const selectId = id || `select-${Math.random().toString(36).slice(2, 9)}`;
+  const generatedId = useId();
+  const selectId = id || generatedId;
 
   return (
-    <div className="w-full">
+    <div className="w-full relative">
       {label && (
         <label
           htmlFor={selectId}

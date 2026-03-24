@@ -64,13 +64,20 @@ export default function SuggestionForm({
 
       const {
         data: { user },
+        error: authError,
       } = await supabase.auth.getUser();
+
+      if (authError || !user) {
+        setError('You must be signed in to submit a suggestion.');
+        setIsLoading(false);
+        return;
+      }
 
       const { error: insertError } = await supabase
         .from('suggestions')
         .insert({
           project_id: projectId,
-          author_id: user?.id || null,
+          author_id: user.id,
           type: formData.type,
           title: formData.title,
           body: formData.body,
@@ -79,7 +86,8 @@ export default function SuggestionForm({
         });
 
       if (insertError) {
-        setError(insertError.message);
+        console.error('Suggestion insert failed:', insertError);
+        setError('Failed to submit suggestion. Please try again.');
       } else {
         setSuccess(true);
         setFormData({
@@ -95,7 +103,8 @@ export default function SuggestionForm({
         }, 3000);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Suggestion submission error:', err);
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
