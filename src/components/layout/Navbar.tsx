@@ -117,12 +117,14 @@ export default function Navbar({ user }: NavbarProps) {
                     {user.username}
                   </span>
                 </Link>
-                <a
-                  href="/auth/signout"
-                  className="text-xs text-muted hover:text-foreground transition-colors hidden sm:inline"
-                >
-                  Sign out
-                </a>
+                <form action="/auth/signout" method="POST" className="hidden sm:inline">
+                  <button
+                    type="submit"
+                    className="text-xs text-muted hover:text-foreground transition-colors"
+                  >
+                    Sign out
+                  </button>
+                </form>
               </div>
             ) : (
               <Link
@@ -177,12 +179,14 @@ export default function Navbar({ user }: NavbarProps) {
                 >
                   My Profile
                 </Link>
-                <a
-                  href="/auth/signout"
-                  className="block px-4 py-2 text-sm text-muted hover:bg-input rounded-lg transition-colors"
-                >
-                  Sign out
-                </a>
+                <form action="/auth/signout" method="POST">
+                  <button
+                    type="submit"
+                    className="block w-full text-left px-4 py-2 text-sm text-muted hover:bg-input rounded-lg transition-colors"
+                  >
+                    Sign out
+                  </button>
+                </form>
               </>
             ) : (
               <Link

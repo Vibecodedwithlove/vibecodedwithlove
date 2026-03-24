@@ -149,7 +149,17 @@ export default function ProjectSubmitForm({
         return;
       }
 
-      const projectSlug = generateSlug(formData.title);
+      let projectSlug = generateSlug(formData.title);
+
+      // Check for slug collision and append random suffix if needed
+      const { data: existingSlug } = await supabase
+        .from('projects')
+        .select('id')
+        .eq('slug', projectSlug)
+        .maybeSingle();
+      if (existingSlug) {
+        projectSlug += '-' + Math.random().toString(36).slice(2, 6);
+      }
 
       if (mode === 'create') {
         const { data, error: submitError } = await supabase
@@ -216,8 +226,8 @@ export default function ProjectSubmitForm({
         router.push(`/project/${initialData.slug}`);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
-      setError(errorMessage);
+      console.error('Project submission failed:', err);
+      setError('Failed to submit project. Please try again.');
     } finally {
       setIsLoading(false);
     }

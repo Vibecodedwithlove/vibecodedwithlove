@@ -27,13 +27,17 @@ export async function GET(request: NextRequest) {
 
     // Redirect to intended page or home on successful authentication
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const redirectPath = searchParams.get('redirect') || '/';
+    let redirectPath = searchParams.get('redirect') || '/';
+    // Prevent open redirect — only allow relative paths starting with /
+    if (!redirectPath.startsWith('/') || redirectPath.startsWith('//')) {
+      redirectPath = '/';
+    }
     return NextResponse.redirect(new URL(redirectPath, siteUrl));
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
+    console.error('Auth callback failed:', err);
     return NextResponse.redirect(
       new URL(
-        `/auth/login?error=${encodeURIComponent(errorMessage)}`,
+        `/auth/login?error=${encodeURIComponent('Authentication failed. Please try again.')}`,
         request.url
       )
     );

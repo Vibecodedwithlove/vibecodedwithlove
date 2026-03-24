@@ -43,7 +43,7 @@ export default function ProjectDetail({ project, isOwner }: ProjectDetailProps) 
 
       const { error } = await supabase
         .from('projects')
-        .delete()
+        .update({ status: 'archived' })
         .eq('id', project.id);
 
       if (error) throw error;
@@ -225,7 +225,7 @@ export default function ProjectDetail({ project, isOwner }: ProjectDetailProps) 
             onClick={handleDelete}
             size="lg"
           >
-            {showDeleteConfirm ? 'Confirm Delete' : 'Delete Project'}
+            {showDeleteConfirm ? 'Confirm Archive' : 'Archive Project'}
           </Button>
           {showDeleteConfirm && (
             <Button

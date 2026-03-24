@@ -57,14 +57,21 @@ export default function MarkdownRenderer({
           p: ({ ...props }) => (
             <p className="text-foreground leading-relaxed mb-4" {...props} />
           ),
-          a: ({ ...props }) => (
-            <a
-              className="text-warmPrimary hover:text-warmPrimaryDark underline transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
-              {...props}
-            />
-          ),
+          a: ({ href, ...props }) => {
+            // Only allow safe URL protocols to prevent javascript: XSS
+            const safeHref = href && (href.startsWith('http://') || href.startsWith('https://') || href.startsWith('/') || href.startsWith('mailto:'))
+              ? href
+              : '#';
+            return (
+              <a
+                href={safeHref}
+                className="text-warmPrimary hover:text-warmPrimaryDark underline transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+                {...props}
+              />
+            );
+          },
           ul: ({ ...props }) => (
             <ul
               className="list-disc list-inside text-foreground space-y-2 mb-4"
